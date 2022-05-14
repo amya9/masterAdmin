@@ -1,5 +1,6 @@
 package com.example.testme2admin.models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CategoriesModel {
@@ -8,10 +9,19 @@ public class CategoriesModel {
     private List<String> sets;
     private String url;
     private String key;
+    private String master_key;
 
     public CategoriesModel(){
 // empty constructor for firebase
     }
+
+//    public CategoriesModel(String name, List<String> sets, String url, String key , String master_key) {
+//        this.name = name;
+//        this.sets = sets;
+//        this.url = url;
+//        this.key = key;
+//        this.master_key = master_key ;
+//    }
 
     public CategoriesModel(String name, List<String> sets, String url, String key) {
         this.name = name;
@@ -51,4 +61,12 @@ public class CategoriesModel {
     public void setKey(String key) {
         this.key = key;
     }
+//
+//    public String getMaster_key() {
+//        return master_key;
+//    }
+//
+//    public void setMaster_key(String master_key) {
+//        this.master_key = master_key;
+//    }
 }

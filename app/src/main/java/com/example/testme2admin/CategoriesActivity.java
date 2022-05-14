@@ -4,10 +4,13 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -60,8 +63,9 @@ public class CategoriesActivity extends AppCompatActivity {
     FirebaseDatabase database;
     DatabaseReference reference;
     public static List<CategoriesModel> list;
-    private  CategoriesAdapter categoriesAdapter;
+    private  CategoriesAdapter categoriesAdapter , adapter;
 
+    private static final String TAG = "MyActivity";
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -80,13 +84,32 @@ public class CategoriesActivity extends AppCompatActivity {
         loadingDialog.getWindow().setLayout(LinearLayout.LayoutParams.WRAP_CONTENT , LinearLayout.LayoutParams.WRAP_CONTENT);
         loadingDialog.setCancelable(false);
         //loading category Dialog
-          setCategoryDialog();
+        setCategoryDialog();
+
         recyclerView = findViewById(R.id.category_rv);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
         loadingDialog.show();
-         list = new ArrayList<>();
+
+
+//        Log.e(TAG , getIntent().getStringExtra("master_key"));
+        String master_key =  getIntent().getStringExtra("master_key") ;
+
+// Storing master_key into SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("masterKeySH" , MODE_PRIVATE);
+        // Creating an Editor object to edit(write to the file)
+        SharedPreferences.Editor editMasterSH = sharedPreferences.edit();
+        editMasterSH.putString("masterKey" , master_key);
+        // Once the changes have been made,
+        // we need to commit to apply those changes made,
+        // otherwise, it will throw an error
+        editMasterSH.apply();
+
+        Log.e(TAG , master_key);
+        list = new ArrayList<>();
+        adapter = new CategoriesAdapter(master_key);
+        Log.e(TAG , list.toString());
          categoriesAdapter = new CategoriesAdapter(list, new CategoriesAdapter.DeleteListener() {
              @Override
              public void onDelete(final String key , final int position) {
@@ -97,12 +120,12 @@ public class CategoriesActivity extends AppCompatActivity {
                              @Override
                              public void onClick(DialogInterface dialog, int which) {
                                  loadingDialog.show();
-                                 reference.child("categories").child(key).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                 reference.child("masters").child(getIntent().getStringExtra("master_key")).child("categories").child(key).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                      @Override
                                      public void onComplete(@NonNull Task<Void> task) {
                                          if (task.isSuccessful()){
                                              for (String setIds :list.get(position).getSets()){
-                                                 reference.child("SETS").child(setIds).removeValue();
+                                                 reference.child("masters").child(getIntent().getStringExtra("master_key")).child("sets").child(setIds).removeValue();
                                              }
                                              list.remove(position);
                                              categoriesAdapter.notifyDataSetChanged();
@@ -119,21 +142,23 @@ public class CategoriesActivity extends AppCompatActivity {
                          .setIcon(android.R.drawable.ic_dialog_alert)
                          .show();
              }
-         });
+         } );
         recyclerView.setAdapter(categoriesAdapter);
         loadingDialog.show();
-        reference.child("categories").addListenerForSingleValueEvent(new ValueEventListener() {
+        reference.child("masters").child(getIntent().getStringExtra("master_key")).child("categories").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                for (DataSnapshot dataSnapshot1 : snapshot.getChildren()){
                    List<String> sets = new ArrayList<>();
+//                   String master_key =  getIntent().getStringExtra("master_key");
                    for (DataSnapshot dataSnapshot2 : dataSnapshot1.child("sets").getChildren()){
                        sets.add(dataSnapshot2.getKey());
                    }
+
                    list.add(new CategoriesModel(dataSnapshot1.child("name").getValue().toString(),
                            sets,
                            dataSnapshot1.child("url").getValue().toString() ,
-                           dataSnapshot1.getKey()));
+                           dataSnapshot1.getKey())) ;
                }
                categoriesAdapter.notifyDataSetChanged();
                loadingDialog.dismiss();
@@ -166,7 +191,7 @@ public class CategoriesActivity extends AppCompatActivity {
                     .setTitle("Logout ")
                     .setMessage("Are you sure, you want to logout?")
                     .setPositiveButton("Logout", new DialogInterface.OnClickListener() {
-                        @Override
+
                         public void onClick(DialogInterface dialog, int which) {
                        loadingDialog.show();
                             FirebaseAuth.getInstance().signOut();
@@ -245,7 +270,7 @@ public class CategoriesActivity extends AppCompatActivity {
            loadingDialog.show();
 
         StorageReference storageReference = FirebaseStorage.getInstance().getReference();
-        final StorageReference imageReference =  storageReference.child("categories").child(image.getLastPathSegment());
+        final StorageReference imageReference =  storageReference.child("masters").child(getIntent().getStringExtra("master_key")).child("categories").child(image.getLastPathSegment());
 
        UploadTask uploadTask = imageReference.putFile(image);
 
@@ -292,11 +317,11 @@ public class CategoriesActivity extends AppCompatActivity {
         map.put("url" , downloadUrl);
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         final String id = UUID.randomUUID().toString();
-        database.getReference().child("categories").child(id).setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+        database.getReference().child("masters").child(getIntent().getStringExtra("master_key")).child("categories").child(id).setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()){
-                     list.add(new CategoriesModel(addCategoryName.getText().toString() , new ArrayList<String>(), downloadUrl , id));
+                     list.add(new CategoriesModel(addCategoryName.getText().toString() , new ArrayList<String>(), downloadUrl , id ) );
                      categoriesAdapter.notifyDataSetChanged();
                 }else {
                     Toast.makeText(CategoriesActivity.this , "Something Went Wrong" , Toast.LENGTH_LONG).show();

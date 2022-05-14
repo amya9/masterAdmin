@@ -5,11 +5,13 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -54,7 +56,7 @@ import java.util.UUID;
 public class QuestionsActivity extends AppCompatActivity {
     private Button addExcelBtn;
     private QuestionAdapter questionAdapter;
-     public static   List<QuestionModel> list;
+    public static   List<QuestionModel> list;
     private Dialog loadingDialog;
     private DatabaseReference reference;
     private String categoryName;
@@ -67,6 +69,9 @@ public class QuestionsActivity extends AppCompatActivity {
     private static final int OPTION_C_CELL_INDEX = 3;
     private static final int OPTION_D_CELL_INDEX = 4;
     private static final int CORRECT_ANS_CELL_INDEX = 5;
+
+
+    private static final String TAG = "QuestionActivity";
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -99,7 +104,16 @@ public class QuestionsActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(RecyclerView.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
-         list = new ArrayList<>();
+        list = new ArrayList<>();
+
+//        get master key from masterKeySH
+
+// Retrieving the value using its keys the file name
+// must be same in both saving and retrieving the data
+        SharedPreferences masterKeySH = getSharedPreferences("masterKeySH", MODE_PRIVATE);
+        final String masterKey = masterKeySH.getString("masterKey", null);
+
+
         questionAdapter = new QuestionAdapter(list , categoryName , new QuestionAdapter.DeleteListener() {
             @Override
             public void onLongClick(final int position, final String id) {
@@ -111,7 +125,7 @@ public class QuestionsActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 loadingDialog.show();
-                                reference.child("SETS").child(setId).child(id).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                reference.child("masters").child(masterKey).child("sets").child(setId).child(id).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if (task.isSuccessful()){
@@ -131,6 +145,7 @@ public class QuestionsActivity extends AppCompatActivity {
             }
         });
         recyclerView.setAdapter(questionAdapter);
+
         getData(categoryName , setId);
         addSingleBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -183,9 +198,10 @@ public class QuestionsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 102){
             if (resultCode == RESULT_OK){
-                assert data != null;
-                String filePath = Objects.requireNonNull(data.getData()).getPath();
-                assert filePath != null;
+//                assert data != null;
+                String filePath = data.getData().getPath();
+                Log.e(TAG , filePath);
+//                assert filePath != null;
                 if (filePath.endsWith(".xlsx")){
 //                    Toast.makeText(this , "file selected" , Toast.LENGTH_LONG).show();
 
@@ -200,6 +216,7 @@ public class QuestionsActivity extends AppCompatActivity {
     private void readFile(final Uri fileUri){
         loadingText.setText("Scanning Questions...");
         loadingDialog.show();
+
 
         AsyncTask.execute(new Runnable() {
             @Override
@@ -271,9 +288,13 @@ public class QuestionsActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         loadingText.setText("Uploading...");
+//          sharedPreference to get master key saved in category activity
 
-                        FirebaseDatabase.getInstance().getReference()
-                                .child("SETS").child(setId).updateChildren(pMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        SharedPreferences masterKeySH = getSharedPreferences("masterKeySH", MODE_PRIVATE);
+                        final String masterKey = masterKeySH.getString("masterKey", null);
+
+                        FirebaseDatabase.getInstance().getReference().child("masters").child(masterKey)
+                                .child("sets").child(setId).updateChildren(pMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 if (task.isSuccessful()){
@@ -353,7 +374,10 @@ public class QuestionsActivity extends AppCompatActivity {
     }
     private void getData(String  categoryName , final String setId){
         loadingDialog.show();
-                reference.child("SETS").child(setId).addListenerForSingleValueEvent(new ValueEventListener() {
+        SharedPreferences masterKeySH = getSharedPreferences("masterKeySH", MODE_PRIVATE);
+        final String masterKey = masterKeySH.getString("masterKey", null);
+
+                reference.child("masters").child(masterKey).child("sets").child(setId).addListenerForSingleValueEvent(new ValueEventListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {

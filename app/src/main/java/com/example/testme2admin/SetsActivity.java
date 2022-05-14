@@ -3,8 +3,10 @@ package com.example.testme2admin;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.GridView;
 import android.widget.LinearLayout;
@@ -31,6 +33,7 @@ public class SetsActivity extends AppCompatActivity {
     private DatabaseReference reference;
     private String categoryName;
     private List<String> sets;
+    private static final String TAG = "SetsActivity";
 //    private InterstitialAd mInterstitialAd;
 
 
@@ -50,10 +53,20 @@ public class SetsActivity extends AppCompatActivity {
         loadingDialog.getWindow().setLayout(LinearLayout.LayoutParams.WRAP_CONTENT , LinearLayout.LayoutParams.WRAP_CONTENT);
         loadingDialog.setCancelable(false);
 
-        categoryName = getIntent().getStringExtra("title");
+//        get master key from masterKeySH
 
+// Retrieving the value using its keys the file name
+// must be same in both saving and retrieving the data
+        SharedPreferences masterKeySH = getSharedPreferences("masterKeySH", MODE_PRIVATE);
+        final String masterKey = masterKeySH.getString("masterKey", null);
+
+
+        categoryName = getIntent().getStringExtra("title");
         getSupportActionBar().setTitle(categoryName);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+//        Log.e(TAG , getIntent().getStringExtra("masterKey"));
+        Log.e(TAG ,masterKey);
 
         reference = FirebaseDatabase.getInstance().getReference();
 
@@ -66,8 +79,9 @@ public class SetsActivity extends AppCompatActivity {
                 loadingDialog.show();
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
                 final String id  = UUID.randomUUID().toString();
-                database.getReference().child("categories").child(getIntent().getStringExtra("key")).child("sets").child(id).setValue("setId").addOnCompleteListener(new OnCompleteListener<Void>() {
+                database.getReference().child("masters").child(masterKey).child("categories").child(getIntent().getStringExtra("key")).child("sets").child(id).setValue("setId").addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
+
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()){
                              sets.add(id);
@@ -88,11 +102,11 @@ public class SetsActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 loadingDialog.show();
-                                         reference.child("SETS").child(setId).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                         reference.child("masters").child(masterKey).child("sets").child(setId).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                              @Override
                                              public void onComplete(@NonNull Task<Void> task) {
                                                  if (task.isSuccessful()){
-                                                     reference.child("categories").child( CategoriesActivity.list.get(getIntent().getIntExtra("position", 0)).getKey())
+                                                     reference.child("masters").child(masterKey).child("categories").child( CategoriesActivity.list.get(getIntent().getIntExtra("position", 0)).getKey())
                                                              .child("sets").child(setId).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                                          @Override
                                                          public void onComplete(@NonNull Task<Void> task) {

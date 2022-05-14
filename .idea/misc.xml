@@ -3,7 +3,21 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/drawable/button_rc.xml" value="0.26614583333333336" />
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/drawable/categories_rc.xml" value="0.26614583333333336" />
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/drawable/edittext_rc.xml" value="0.26614583333333336" />
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/layout/activity_add_question.xml" value="0.25" />
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/layout/activity_categories.xml" value="0.25" />
         <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/layout/activity_master.xml" value="0.25" />
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/layout/activity_questions.xml" value="0.264" />
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/layout/add_category_dialog.xml" value="0.25" />
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/layout/add_master.xml" value="0.25" />
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/layout/categories_item.xml" value="0.25" />
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/layout/master_item.xml" value="0.25" />
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/layout/question_item.xml" value="0.25" />
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/layout/sets_item.xml" value="0.25" />
+        <entry key="..\:/ANDROID/PROJECT/testMe2Admin/app/src/main/res/menu/menu.xml" value="0.25" />
       </map>
     </option>
   </component>

@@ -1,6 +1,7 @@
 package com.example.testme2admin;
 
 import android.app.Dialog;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -118,6 +119,7 @@ public class AddQuestionActivity extends AppCompatActivity {
             EditText answer = (EditText)optionLayout.getChildAt(i);
             if(answer.getText().toString().isEmpty()){
                 answer.setError("Required");
+                return;
             }
 
 
@@ -129,6 +131,7 @@ public class AddQuestionActivity extends AppCompatActivity {
         }
         if (correctIndex == -1){
             Toast.makeText(this , "Please mark your answer" , Toast.LENGTH_LONG).show();
+            return;
         }
 
         final HashMap<String  , Object> map = new HashMap<>();
@@ -147,22 +150,29 @@ public class AddQuestionActivity extends AppCompatActivity {
             id = UUID.randomUUID().toString();
         }
         loadingDialog.show();
-        FirebaseDatabase.getInstance().getReference()
-                .child("SETS").child(setId).child(id).setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+        //        get master key from masterKeySH
+
+// Retrieving the value using its keys the file name
+// must be same in both saving and retrieving the data
+        SharedPreferences masterKeySH = getSharedPreferences("masterKeySH", MODE_PRIVATE);
+        final String masterKey = masterKeySH.getString("masterKey", null);
+
+        FirebaseDatabase.getInstance().getReference().child("masters").child(masterKey)
+                .child("sets").child(setId).child(id).setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()){
-                    QuestionModel questionModel = new QuestionModel(id , Objects.requireNonNull(map.get("question")).toString() ,
+                    QuestionModel questionModel = new QuestionModel(id , Objects.requireNonNull(map.get("correctAnswer")).toString() ,
                             Objects.requireNonNull(map.get("optionA")).toString() , Objects.requireNonNull(map.get("optionB")).toString(), Objects.requireNonNull(map.get("optionC")).toString() ,
-                            Objects.requireNonNull(map.get("optionD")).toString(), Objects.requireNonNull(map.get("correctAnswer")).toString(), map.get("setId").toString());
+                            Objects.requireNonNull(map.get("optionD")).toString(), Objects.requireNonNull(map.get("question")).toString(), map.get("setId").toString());
 
                     if (position != -1){
 
                         QuestionsActivity.list.set(position,questionModel);
                     }else {
                         QuestionsActivity.list.add(questionModel);
-//                        questionAdapter.notifyDataSetChanged();
+                        questionAdapter.notifyDataSetChanged();
                     }
                     finish();
                 }else {

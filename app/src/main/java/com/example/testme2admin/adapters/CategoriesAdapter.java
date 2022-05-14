@@ -1,6 +1,7 @@
 package com.example.testme2admin.adapters;
 
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,12 +23,19 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class CategoriesAdapter extends RecyclerView.Adapter<CategoriesAdapter.ViewHolder> {
     private DeleteListener deleteListener;
      private List<CategoriesModel> categoriesModelList;
+     public String master;
 
     public CategoriesAdapter(List<CategoriesModel> categoriesModelList , DeleteListener deleteListener) {
         this.categoriesModelList = categoriesModelList;
         this.deleteListener = deleteListener;
+//        this.master = master_key ;
+//        Log.i("category" , master_key);
     }
 
+    public  CategoriesAdapter(String master_key){
+        this.master = master_key ;
+        Log.i("category" , master_key);
+    }
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -37,7 +45,8 @@ public class CategoriesAdapter extends RecyclerView.Adapter<CategoriesAdapter.Vi
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.setData(categoriesModelList.get(position).getUrl() , categoriesModelList.get(position).getName() , categoriesModelList.get(position).getKey() , position);
+
+        holder.setData(categoriesModelList.get(position).getUrl() , categoriesModelList.get(position).getName() , categoriesModelList.get(position).getKey() , position );
 
     }
 
@@ -67,6 +76,7 @@ public class CategoriesAdapter extends RecyclerView.Adapter<CategoriesAdapter.Vi
                     setsIntent.putExtra("title" , title);
                     setsIntent.putExtra("position" , position);
                     setsIntent.putExtra("key" , key);
+                    setsIntent.putExtra("maskerKey" , master );
                     itemView.getContext().startActivity(setsIntent);
                 }
             });

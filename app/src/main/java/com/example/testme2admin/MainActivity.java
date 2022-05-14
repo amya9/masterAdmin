@@ -34,7 +34,8 @@ public class MainActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
 
         firebaseAuth = FirebaseAuth.getInstance();
-        final Intent addIntent = new Intent(this , CategoriesActivity.class);
+//        final Intent addIntent = new Intent(this , CategoriesActivity.class);
+        final Intent addIntent = new Intent(this , MasterActivity.class);
         if(firebaseAuth.getCurrentUser()  != null){
             //Category Intent
             startActivity(addIntent);
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                           startActivity(addIntent);
                           finish();
                       }else {
-                          Toast.makeText(MainActivity.this , "Failled" , Toast.LENGTH_LONG).show();
+                          Toast.makeText(MainActivity.this , "Failed" , Toast.LENGTH_LONG).show();
                       }
                       progressBar.setVisibility(View.INVISIBLE);
                     }
